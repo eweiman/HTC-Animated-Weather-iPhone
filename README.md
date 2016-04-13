@@ -1,1 +1,1 @@
-# HTC-Animated-Weather-iPhone
+# HTC Animated Weather Widget for iOS devices

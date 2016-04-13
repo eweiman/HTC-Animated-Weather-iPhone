@@ -7,6 +7,7 @@
 <!-- Updated for iOS 9.0 and new Yahoo API by Ludacrisvp March 2016 -->
 <!-- Updated for different new Yahoo API by Ludacrisvp April 2016 -->
 <!-- Corrected clock digit distortion by Ludacrisvp April 2016 -->
+<!-- Reverted to 2nd Yahoo API -->
 
 <meta name="viewport" content="width=device-width, minimum-scale=0.1, maximum-scale=1.0, user-scalable=yes"/>
 <script type="text/javascript" charset="utf-8" src="jquery.min.js"></script>
@@ -296,24 +297,24 @@ function findChild (element, nodeName)
 // Original API
 function fetchWeatherData (callback, zip) {
     if (isCelsius == false){
-        varUnit = 'f'
-        //varUnit = '%27f%27' //API update option A, less reliable
+        //      varUnit = 'f' //API update option B - disabled
+        varUnit = '%27f%27' //API update option A, less reliable
     }else{
-        varUnit = 'c'
-        //varUnit = '%27c%27' //API update option A, less reliable
+        //      varUnit = 'c' //API update option B - disabled
+        varUnit = '%27c%27' //API update option A, less reliable
     }
     
     //    url="http://weather.yahooapis.com/forecastrss" //Orignal API - disabled
-    //    url="https://query.yahooapis.com/v1/public/yql" //API update option A, less reliable
+    url="https://query.yahooapis.com/v1/public/yql" //API update option A, less reliable
     
-    url="http://xml.weather.yahoo.com/forecastrss" //API update opetion B, unknown end of life status
+    //url="http://xml.weather.yahoo.com/forecastrss" //API update option B - disabled
     var xml_request = new XMLHttpRequest();
     xml_request.onload = function(e) {xml_loaded(e, xml_request, callback);}
     xml_request.overrideMimeType("text/xml");
-    xml_request.open("GET", url+'?w='+zip+'&u='+varUnit);
-    //  xml_request.open("GET", url+'?q=SELECT%20*%20FROM%20weather.forecast%20WHERE%20woeid%3D%27'+zip+'%27%20AND%20u%3D'+varUnit+'&format=xml'); ////API update option A, less reliable
+    //  xml_request.open("GET", url+'?w='+zip+'&u='+varUnit); //API update option B - disabled
+    xml_request.open("GET", url+'?q=SELECT%20*%20FROM%20weather.forecast%20WHERE%20woeid%3D%27'+zip+'%27%20AND%20u%3D'+varUnit+'&format=xml'); ////API update option A, less reliable
     //  Remove cache line if using API update option A
-    xml_request.setRequestHeader("Cache-Control", "no-cache");
+    //  xml_request.setRequestHeader("Cache-Control", "no-cache");
     xml_request.send(null);
     return xml_request;
 }
@@ -325,9 +326,9 @@ function xml_loaded (event, request, callback)
     {
         var obj = {error:false, errorString:null};
         // API update option A
-        //      var effectiveRoot = findChild(findChild(findChild(request.responseXML, "query"), "results"), "channel");
-        // Orignal API setting being used now
-        var effectiveRoot = findChild(findChild(request.responseXML, "rss"), "channel");
+        var effectiveRoot = findChild(findChild(findChild(request.responseXML, "query"), "results"), "channel");
+        // Orignal API setting - disabled
+        //      var effectiveRoot = findChild(findChild(request.responseXML, "rss"), "channel");
         obj.city = findChild(effectiveRoot, "yweather:location").getAttribute("city");
         obj.realFeel = findChild(effectiveRoot, "yweather:wind").getAttribute("chill"); //Only accounts for windChill
         conditionTag = findChild(findChild(effectiveRoot, "item"), "yweather:condition");

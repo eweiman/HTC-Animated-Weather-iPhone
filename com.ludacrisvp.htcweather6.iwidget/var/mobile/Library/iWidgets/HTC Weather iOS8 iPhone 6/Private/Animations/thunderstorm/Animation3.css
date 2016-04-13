@@ -1,0 +1,23 @@
+body {
+	margin: 0;
+}
+
+@-webkit-keyframes thunder_animation {
+	0% {opacity: 10.0;}
+	30% {opacity: .0;}
+	100% {opacity: 0.0;}
+}
+
+#thunder {
+	position: absolute;
+	left: px;
+    top: 23px;
+	width: 414px;
+	height: 373px;
+	background-color: transparent;
+	opacity: 0.0;
+	-webkit-animation-name: thunder_animation;
+    -webkit-animation-duration: 11s;
+	-webkit-animation-iteration-count: infinite;
+-webkit-animation-delay: 5.0s;
+}

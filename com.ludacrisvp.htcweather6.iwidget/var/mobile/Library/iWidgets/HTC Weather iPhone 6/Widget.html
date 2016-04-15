@@ -93,17 +93,17 @@
             //var locale = 'autoip' // Weather underground code
             //var locale = 'uk/york'  //cloudy
             //var locale = 'fl/midway'  //rain
-            //var locale  = 55376 //zip
-            //var isCelsius = false //Bool
-            //var useRealFeel = false //Bool
-            //var updateInterval = '30' //Minutes
-            //var showForecast = true //Bool
-            //var showWeatherAni = true //Bool
-            //var displayClock = true //Bool
-            //var displayWeatherIcon = true //Bool
-            //var displayWeatherBg = true //Bool
-            //var resize = '100' // percent, 100 max
-            //var key = '0123456789abcdef' // Weather underground API key
+            var locale  = 55376 //zip
+            var isCelsius = false //Bool
+            var useRealFeel = false //Bool
+            var updateInterval = '30' //Minutes
+            var showForecast = true //Bool
+            var showWeatherAni = true //Bool
+            var displayClock = true //Bool
+            var displayWeatherIcon = true //Bool
+            var displayWeatherBg = true //Bool
+            var resize = '100' // percent, 100 max
+            var key = '0123456789abcdef' // Weather underground API key
             
             </script>
         
@@ -130,7 +130,7 @@
         
         function updateClock ( )
         {
-            //var TwentyFourHourClock = false
+            var TwentyFourHourClock = false
             var currentTime = new Date ( );
             var currentHours = currentTime.getHours ( );
             var currentMinutes = currentTime.getMinutes ( );
@@ -330,35 +330,35 @@
                                           obj.TodayCode = forecast10day['forecast']['simpleforecast']['forecastday']['0']['icon'];
                                           obj.TodayHi_f = forecast10day['forecast']['simpleforecast']['forecastday']['0']['high']['fahrenheit'];
                                           obj.TodayLo_f = forecast10day['forecast']['simpleforecast']['forecastday']['0']['low']['fahrenheit'];
-                                          obj.TodayHi_c = forecast10day['forecast']['simpleforecast']['forecastday']['0']['low']['celsius'];
+                                          obj.TodayHi_c = forecast10day['forecast']['simpleforecast']['forecastday']['0']['high']['celsius'];
                                           obj.TodayLo_c = forecast10day['forecast']['simpleforecast']['forecastday']['0']['low']['celsius'];
                                           
                                           obj.Day1 = forecast10day['forecast']['simpleforecast']['forecastday']['1']['date']['weekday_short'];
                                           obj.Day1Code = forecast10day['forecast']['simpleforecast']['forecastday']['1']['icon'];
                                           obj.Day1Hi_f = forecast10day['forecast']['simpleforecast']['forecastday']['1']['high']['fahrenheit'];
                                           obj.Day1Lo_f = forecast10day['forecast']['simpleforecast']['forecastday']['1']['low']['fahrenheit'];
-                                          obj.Day1Hi_c = forecast10day['forecast']['simpleforecast']['forecastday']['1']['low']['celsius'];
+                                          obj.Day1Hi_c = forecast10day['forecast']['simpleforecast']['forecastday']['1']['high']['celsius'];
                                           obj.Day1Lo_c = forecast10day['forecast']['simpleforecast']['forecastday']['1']['low']['celsius'];
                                           
                                           obj.Day2 = forecast10day['forecast']['simpleforecast']['forecastday']['2']['date']['weekday_short'];
                                           obj.Day2Code = forecast10day['forecast']['simpleforecast']['forecastday']['2']['icon'];
                                           obj.Day2Hi_f = forecast10day['forecast']['simpleforecast']['forecastday']['2']['high']['fahrenheit'];
                                           obj.Day2Lo_f = forecast10day['forecast']['simpleforecast']['forecastday']['2']['low']['fahrenheit'];
-                                          obj.Day2Hi_c = forecast10day['forecast']['simpleforecast']['forecastday']['2']['low']['celsius'];
+                                          obj.Day2Hi_c = forecast10day['forecast']['simpleforecast']['forecastday']['2']['high']['celsius'];
                                           obj.Day2Lo_c = forecast10day['forecast']['simpleforecast']['forecastday']['2']['low']['celsius'];
                                           
                                           obj.Day3 = forecast10day['forecast']['simpleforecast']['forecastday']['3']['date']['weekday_short'];
                                           obj.Day3Code = forecast10day['forecast']['simpleforecast']['forecastday']['3']['icon'];
                                           obj.Day3Hi_f = forecast10day['forecast']['simpleforecast']['forecastday']['3']['high']['fahrenheit'];
                                           obj.Day3Lo_f = forecast10day['forecast']['simpleforecast']['forecastday']['3']['low']['fahrenheit'];
-                                          obj.Day3Hi_c = forecast10day['forecast']['simpleforecast']['forecastday']['3']['low']['celsius'];
+                                          obj.Day3Hi_c = forecast10day['forecast']['simpleforecast']['forecastday']['3']['high']['celsius'];
                                           obj.Day3Lo_c = forecast10day['forecast']['simpleforecast']['forecastday']['3']['low']['celsius'];
                                           
                                           obj.Day4 = forecast10day['forecast']['simpleforecast']['forecastday']['4']['date']['weekday_short'];
                                           obj.Day4Code = forecast10day['forecast']['simpleforecast']['forecastday']['4']['icon'];
                                           obj.Day4Hi_f = forecast10day['forecast']['simpleforecast']['forecastday']['4']['high']['fahrenheit'];
                                           obj.Day4Lo_f = forecast10day['forecast']['simpleforecast']['forecastday']['4']['low']['fahrenheit'];
-                                          obj.Day4Hi_c = forecast10day['forecast']['simpleforecast']['forecastday']['4']['low']['celsius'];
+                                          obj.Day4Hi_c = forecast10day['forecast']['simpleforecast']['forecastday']['4']['high']['celsius'];
                                           obj.Day4Lo_c = forecast10day['forecast']['simpleforecast']['forecastday']['4']['low']['celsius'];
                                           
                                           $.ajax({

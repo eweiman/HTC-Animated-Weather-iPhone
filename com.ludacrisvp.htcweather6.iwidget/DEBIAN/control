@@ -1,6 +1,6 @@
 Package: com.ludacrisvp.htcweather6.iwidget
 Name: HTC Weather iOS8 iPhone 6
-Version: 2.0
+Version: 2.1
 Architecture: iphoneos-arm
 Description: HTC Weather Animated forecast enabled clock iWidget.
 Depends: com.eldwin.iwidgets

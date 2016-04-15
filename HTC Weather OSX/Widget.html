@@ -8,6 +8,7 @@
 <!-- Updated for different new Yahoo API by Ludacrisvp April 2016 -->
 <!-- Corrected clock digit distortion by Ludacrisvp April 2016 -->
 <!-- Reverted to 2nd Yahoo API -->
+<!-- Upgraded to Weather Underground API and ditched Yahoo -->
 
 <meta name="viewport" content="width=device-width, minimum-scale=0.1, maximum-scale=1.0, user-scalable=yes"/>
 <script type="text/javascript" charset="utf-8" src="jquery.min.js"></script>
@@ -89,19 +90,20 @@ SPAN#calendar
 </style>
 
 <script type="text/javascript">
-var locale = 2487084 //WOEID Weather code
-//var locale = 2488499 //snowing test
-//var locale = 4118 //rain test
+//var locale = 'autoip' // Weather underground code
+//var locale = 'uk/york'  //cloudy
+//var locale = 'fl/midway'  //rain
+var locale  = 55376 //zip
 var isCelsius = false //Bool
 var useRealFeel = false //Bool
-var updateInterval = 30 //Minutes
+var updateInterval = '30' //Minutes
 var showForecast = true //Bool
 var showWeatherAni = true //Bool
-var showBackground = true //Bool 
 var displayClock = true //Bool
 var displayWeatherIcon = true //Bool
 var displayWeatherBg = true //Bool
-var resize = 50
+var resize = '100' // percent, 100 max
+var key = '0123456789abcdef' // Weather underground API key
 
 </script>
 
@@ -225,160 +227,218 @@ document.getElementById("calendar").firstChild.nodeValue = this_weekday_name_arr
 <script type="text/javascript" src="translation.js"></script>
 
 <script type="text/javascript">
-var MiniIcons =
-[
-	"tstorm3",			//0		tornado
-	"tstorm3",			//1		tropical storm
-	"tstorm3",			//2		hurricane
-	"tstorm3",			//3		severe thunderstorms
-	"tstorm3",			//4		thunderstorms
-	"sleet",			//5		mixed rain and snow
-	"sleet",			//6		mixed rain and sleet
-	"sleet",			//7		mixed snow and sleet
-	"sleet",			//8		freezing drizzle
-	"light_rain",		//9		drizzle
-	"sleet",			//10	freezing rain
-	"shower3",			//11	showers
-	"shower3",			//12	showers
-	"snow1",			//13	snow flurries
-	"snow2",			//14	light snow showers
-	"snow4",			//15	blowing snow
-	"snow4",			//16	snow
-	"hail", 			//17	hail
-	"sleet",			//18	sleet
-	"mist", 			//19	dust
-	"fog",				//20	foggy
-	"fog",				//21	haze
-	"fog",				//22	smoky
-	"windy",			//23	blustery
-	"windy",			//24	windy
-	"windy",			//25	cold
-	"overcast",			//26	cloudy
-	"cloudy4_night",	//27	mostly cloudy (night)
-	"cloudy4",			//28	mostly cloudy (day)
-	"cloudy1_night",	//29	partly cloudy (night)
-	"cloudy1",			//30	partly cloudy (day)
-	"sunny_night",		//31	clear (night)
-	"sunny",			//32	sunny
-	"fair_night",		//33	fair (night)
-	"fair", 			//34	fair (day)
-	"hail", 			//35	mixed rain and hail
-	"hot",				//36	hot
-	"tstorm1",			//37	isolated thunderstorms
-	"tstorm2",			//38	scattered thunderstorms
-	"tstorm2",			//39	scattered thunderstorms
-	"shower1",			//40	scattered showers
-	"snow5",			//41	heavy snow
-	"snow3",			//42	scattered snow showers
-	"snow5",			//43	heavy snow
-	"cloudy1",			//44	partly cloudy
-	"tstorm3",			//45	thundershowers
-	"snow2",			//46	snow showers
-	"tstorm1",			//47	isolated thundershowers
-	"dunno",			//3200	not available
-]
 
 function constructError (string)
 {
 	return {error:true, errorString:string};
 }
 
-function findChild (element, nodeName)
-{
-	var child;
-	for (child = element.firstChild; child != null; child = child.nextSibling)
-	{
-		if (child.nodeName == nodeName)
-			return child;
-	}
-	return null;
-}
 
-// Original API
-function fetchWeatherData (callback, zip) {
-    if (isCelsius == false){
-//      varUnit = 'f' //API update option B - disabled
-        varUnit = '%27f%27' //API update option A, less reliable
-    }else{
-//      varUnit = 'c' //API update option B - disabled
-        varUnit = '%27c%27' //API update option A, less reliable
-    }
-    
-//    url="http://weather.yahooapis.com/forecastrss" //Orignal API - disabled
-url="https://query.yahooapis.com/v1/public/yql" //API update option A, less reliable
+</script>
+<script>
+    jQuery(document).ready(function fetchWeatherData($)
+                           {
+                           var obj = {error:false, errorString:null};
+                           $.ajax({
+                                  url : "http://api.wunderground.com/api/"+key+"/geolookup/conditions/q/"+locale+".json",
+                                  dataType : "jsonp",
+                                  success : function(conditions) {
+                                  //location
+                                  obj.city = conditions['location']['city'];
+                                  document.getElementById("city").innerText=obj.city.substring(0,13);
+                                  //temp
+                                  obj.temp_f = conditions['current_observation']['temp_f'];
+                                  obj.temp_c = conditions['current_observation']['temp_c'];
+                                  //obj.dew_f = conditions['current_observation']['dewpoint_f'];
+                                  //obj.dew_c = conditions['current_observation']['dewpoint_c'];
+                                  obj.feelslike_f = conditions['current_observation']['feelslike_f'];
+                                  obj.feelslike_c = conditions['current_observation']['feelslike_c'];
+                                  obj.humidity = conditions['current_observation']['relative_humidity'];
 
-//url="http://xml.weather.yahoo.com/forecastrss" //API update option B - disabled
-    var xml_request = new XMLHttpRequest();
-    xml_request.onload = function(e) {xml_loaded(e, xml_request, callback);}
-    xml_request.overrideMimeType("text/xml");
-//  xml_request.open("GET", url+'?w='+zip+'&u='+varUnit); //API update option B - disabled
-    xml_request.open("GET", url+'?q=SELECT%20*%20FROM%20weather.forecast%20WHERE%20woeid%3D%27'+zip+'%27%20AND%20u%3D'+varUnit+'&format=xml'); ////API update option A, less reliable
-//  Remove cache line if using API update option A
-//  xml_request.setRequestHeader("Cache-Control", "no-cache");
-    xml_request.send(null);
-    return xml_request;
-}
+                                  //temp display options
+                                  if (isCelsius == true & useRealFeel == true) {
+                                  document.getElementById("temp").innerHTML=obj.feelslike_c+ "&#176; C";
+                                  //document.getElementById("dew").innerHTML="Dewpoint "+obj.dew_c+ "&#176; C";
+                                  document.getElementById("dew").innerHTML="Humidity "+obj.humidity;
+                                  } else {}
+                                  if (isCelsius == true & useRealFeel == false) {
+                                  document.getElementById("temp").innerHTML=obj.temp_c+ "&#176; C";
+                                  //document.getElementById("dew").innerHTML="Dewpoint "+obj.dew_c+ "&#176; C";
+                                  document.getElementById("dew").innerHTML="Humidity "+obj.humidity;
+                                  } else {}
+                                  if (isCelsius == false & useRealFeel == false) {
+                                  document.getElementById("temp").innerHTML=obj.temp_f+ "&#176; F";
+                                  //document.getElementById("dew").innerHTML="Dewpoint "+obj.dew_f+ "&#176; F";
+                                  document.getElementById("dew").innerHTML="Humidity "+obj.humidity;
+                                  } else {}
+                                  if (isCelsius == false & useRealFeel == true) {
+                                  document.getElementById("temp").innerHTML=obj.feelslike_f+ "&#176; F";
+                                  //document.getElementById("dew").innerHTML="Dewpoint "+obj.dew_f+ "&#176; F";
+                                  document.getElementById("dew").innerHTML="Humidity "+obj.humidity;
+                                  } else {}
+                                  //conditions
+                                  obj.weather = conditions['current_observation']['weather'];
+                                  document.getElementById("desc").innerText=obj.weather;
+                                  obj.icon = conditions['current_observation']['icon'];
+                                  
+                                  var currentTime = new Date ( );
+                                  var currentHours = currentTime.getHours ( );
+                                  
+                                  if (20 < currentHours)
+                                  {
+                                  document.getElementById("weatherIcon").src="IconSets/"+iconSet+"/nt_"+obj.icon+iconExt; //night
+                                  }
+                                  else if( 20 < currentHours)
+                                  {
+                                  document.getElementById("weatherIcon").src="IconSets/"+iconSet+"/nt_"+obj.icon+iconExt; //night
+                                  }
+                                  else if(currentHours < 3)
+                                  {
+                                  document.getElementById("weatherIcon").src="IconSets/"+iconSet+"/nt_"+obj.icon+iconExt; //night
+                                  }
+                                  else
+                                  {
+                                  document.getElementById("weatherIcon").src="IconSets/"+iconSet+"/"+obj.icon+iconExt;
+                                  }
+
+                                  if (20 < currentHours & showWeatherAni == true)
+                                  {
+                                  document.getElementById("animationFrame").src="Animations/nt_"+obj.icon+".html"; //night
+                                  }
+                                  else if(20 < currentHours & showWeatherAni == true)
+                                  {
+                                  document.getElementById("animationFrame").src="Animations/nt_"+obj.icon+".html"; //night
+                                  }
+                                  else if(currentHours < 2 & showWeatherAni == true)
+                                  {
+                                  document.getElementById("animationFrame").src="Animations/nt_"+obj.icon+".html"; //night
+                                  }
+                                  else if (showWeatherAni == true)
+                                  {
+                                  document.getElementById("animationFrame").src="Animations/"+obj.icon+".html";
+                                  }
+                                  //end current conditions
+                                  }
+                                  });
 
 
-function xml_loaded (event, request, callback)
-{
-	if (request.responseXML)
-	{
-		var obj = {error:false, errorString:null};
-// API update option A
-        var effectiveRoot = findChild(findChild(findChild(request.responseXML, "query"), "results"), "channel");
-// Orignal API setting - disabled
-//      var effectiveRoot = findChild(findChild(request.responseXML, "rss"), "channel");
-		obj.city = findChild(effectiveRoot, "yweather:location").getAttribute("city");
-		obj.realFeel = findChild(effectiveRoot, "yweather:wind").getAttribute("chill"); //Only accounts for windChill
-		conditionTag = findChild(findChild(effectiveRoot, "item"), "yweather:condition");
-		obj.temp = conditionTag.getAttribute("temp");
-		obj.icon = conditionTag.getAttribute("code");
-		obj.description = conditionTag.getAttribute("text"); 
-		obj.sunset = request.responseXML.getElementsByTagName("astronomy")[0].getAttribute("sunset");
-		obj.sunset = obj.sunset.split(' ')[0]
-		obj.sunsethr = obj.sunset.split(':')[0]*1+12
-		obj.sunsetmin = obj.sunset.split(':')[1]
-		
-		obj.Today = request.responseXML.getElementsByTagName("forecast")[0].getAttribute("day");
-		obj.TodayHi = request.responseXML.getElementsByTagName("forecast")[0].getAttribute("high");
-		obj.TodayLo = request.responseXML.getElementsByTagName("forecast")[0].getAttribute("low");
-		obj.TodayCode = request.responseXML.getElementsByTagName("forecast")[0].getAttribute("code");
+                           $.ajax({
+                                  url : "http://api.wunderground.com/api/"+key+"/forecast10day/q/"+locale+".json",
+                                  dataType : "jsonp",
+                                  success : function(forecast10day) {
+                                  obj.TOD = forecast10day['forecast']['simpleforecast']['forecastday']['0']['date']['weekday_short'];
+                                  obj.TodayCode = forecast10day['forecast']['simpleforecast']['forecastday']['0']['icon'];
+                                  obj.TodayHi_f = forecast10day['forecast']['simpleforecast']['forecastday']['0']['high']['fahrenheit'];
+                                  obj.TodayLo_f = forecast10day['forecast']['simpleforecast']['forecastday']['0']['low']['fahrenheit'];
+                                  obj.TodayHi_c = forecast10day['forecast']['simpleforecast']['forecastday']['0']['low']['celsius'];
+                                  obj.TodayLo_c = forecast10day['forecast']['simpleforecast']['forecastday']['0']['low']['celsius'];
 
-		obj.Day1 = request.responseXML.getElementsByTagName("forecast")[1].getAttribute("day");
-		obj.Day1Hi = request.responseXML.getElementsByTagName("forecast")[1].getAttribute("high");
-		obj.Day1Lo = request.responseXML.getElementsByTagName("forecast")[1].getAttribute("low");
-		obj.Day1Code = request.responseXML.getElementsByTagName("forecast")[1].getAttribute("code");
+                                  obj.Day1 = forecast10day['forecast']['simpleforecast']['forecastday']['1']['date']['weekday_short'];
+                                  obj.Day1Code = forecast10day['forecast']['simpleforecast']['forecastday']['1']['icon'];
+                                  obj.Day1Hi_f = forecast10day['forecast']['simpleforecast']['forecastday']['1']['high']['fahrenheit'];
+                                  obj.Day1Lo_f = forecast10day['forecast']['simpleforecast']['forecastday']['1']['low']['fahrenheit'];
+                                  obj.Day1Hi_c = forecast10day['forecast']['simpleforecast']['forecastday']['1']['low']['celsius'];
+                                  obj.Day1Lo_c = forecast10day['forecast']['simpleforecast']['forecastday']['1']['low']['celsius'];
+                                  
+                                  obj.Day2 = forecast10day['forecast']['simpleforecast']['forecastday']['2']['date']['weekday_short'];
+                                  obj.Day2Code = forecast10day['forecast']['simpleforecast']['forecastday']['2']['icon'];
+                                  obj.Day2Hi_f = forecast10day['forecast']['simpleforecast']['forecastday']['2']['high']['fahrenheit'];
+                                  obj.Day2Lo_f = forecast10day['forecast']['simpleforecast']['forecastday']['2']['low']['fahrenheit'];
+                                  obj.Day2Hi_c = forecast10day['forecast']['simpleforecast']['forecastday']['2']['low']['celsius'];
+                                  obj.Day2Lo_c = forecast10day['forecast']['simpleforecast']['forecastday']['2']['low']['celsius'];
+                                  
+                                  obj.Day3 = forecast10day['forecast']['simpleforecast']['forecastday']['3']['date']['weekday_short'];
+                                  obj.Day3Code = forecast10day['forecast']['simpleforecast']['forecastday']['3']['icon'];
+                                  obj.Day3Hi_f = forecast10day['forecast']['simpleforecast']['forecastday']['3']['high']['fahrenheit'];
+                                  obj.Day3Lo_f = forecast10day['forecast']['simpleforecast']['forecastday']['3']['low']['fahrenheit'];
+                                  obj.Day3Hi_c = forecast10day['forecast']['simpleforecast']['forecastday']['3']['low']['celsius'];
+                                  obj.Day3Lo_c = forecast10day['forecast']['simpleforecast']['forecastday']['3']['low']['celsius'];
+                                  
+                                  obj.Day4 = forecast10day['forecast']['simpleforecast']['forecastday']['4']['date']['weekday_short'];
+                                  obj.Day4Code = forecast10day['forecast']['simpleforecast']['forecastday']['4']['icon'];
+                                  obj.Day4Hi_f = forecast10day['forecast']['simpleforecast']['forecastday']['4']['high']['fahrenheit'];
+                                  obj.Day4Lo_f = forecast10day['forecast']['simpleforecast']['forecastday']['4']['low']['fahrenheit'];
+                                  obj.Day4Hi_c = forecast10day['forecast']['simpleforecast']['forecastday']['4']['low']['celsius'];
+                                  obj.Day4Lo_c = forecast10day['forecast']['simpleforecast']['forecastday']['4']['low']['celsius'];
+                                  
+                           $.ajax({
+                                  url : "http://api.wunderground.com/api/"+key+"/astronomy/q/"+locale+".json",
+                                  dataType : "jsonp",
+                                  success : function(astronomy) {
+                                  obj.sunsethr = astronomy['sun_phase']['sunset']['hour'];
+                                  
+                                  var currentTime = new Date ( );
+                                  var currentHours = currentTime.getHours ( );
+                                  if (obj.sunsethr < currentHours)
+                                  {
+                                  obj.TOD = "Tonight"
+                                  }
+                                  else if(obj.sunsethr < currentHours)
+                                  {
+                                  obj.TOD = "Tonight"
+                                  }
+                                  else if(currentHours < 2)
+                                  {
+                                  obj.TOD = "Tonight"
+                                  }
+                                  else
+                                  {
+                                  obj.TOD = "Today"
+                                  }
+                                  document.getElementById("Today").innerHTML=obj.TOD;
+                                  }});
+                                  
+                                  // start forecast
+                                  if (showForecast == true & isCelsius == false){
 
-		obj.Day2 = request.responseXML.getElementsByTagName("forecast")[2].getAttribute("day");
-		obj.Day2Hi = request.responseXML.getElementsByTagName("forecast")[2].getAttribute("high");
-		obj.Day2Lo = request.responseXML.getElementsByTagName("forecast")[2].getAttribute("low");
-		obj.Day2Code = request.responseXML.getElementsByTagName("forecast")[2].getAttribute("code");
+                                  document.getElementById("TodayIcon").src="IconSets/"+iconSet+"/"+obj.TodayCode+'_small'+iconExt;
+                                  document.getElementById("TodayHiLo").innerHTML=obj.TodayHi_f+ "&#176; / <font color=#a8a8a8>"+obj.TodayLo_f+ "&#176;</font>";
+                                  
+                                  document.getElementById("Day1").innerHTML=obj.Day1;
+                                  document.getElementById("Day1Icon").src="IconSets/"+iconSet+"/"+obj.Day1Code+'_small'+iconExt;
+                                  document.getElementById("Day1HiLo").innerHTML=obj.Day1Hi_f+ "&#176; / <font color=#a8a8a8>"+obj.Day1Lo_f+ "&#176;</font>";
+                                  
+                                  document.getElementById("Day2").innerHTML=obj.Day2;
+                                  document.getElementById("Day2Icon").src="IconSets/"+iconSet+"/"+obj.Day2Code+'_small'+iconExt;
+                                  document.getElementById("Day2HiLo").innerHTML=obj.Day2Hi_f+ "&#176; / <font color=#a8a8a8>"+obj.Day2Lo_f+ "&#176;</font>";
+                                  
+                                  document.getElementById("Day3").innerHTML=obj.Day3;
+                                  document.getElementById("Day3Icon").src="IconSets/"+iconSet+"/"+obj.Day3Code+'_small'+iconExt;
+                                  document.getElementById("Day3HiLo").innerHTML=obj.Day3Hi_f+ "&#176; / <font color=#a8a8a8>"+obj.Day3Lo_f+ "&#176;</font>";
+                                  
+                                  document.getElementById("Day4").innerHTML=obj.Day4;
+                                  document.getElementById("Day4Icon").src="IconSets/"+iconSet+"/"+obj.Day4Code+'_small'+iconExt;
+                                  document.getElementById("Day4HiLo").innerHTML=obj.Day4Hi_f+ "&#176; / <font color=#a8a8a8>"+obj.Day4Lo_f+ "&#176;</font>";
+                                  
+                                  } else {}
+                                  if (showForecast == true & isCelsius == true){
+                                  
+                                  document.getElementById("TodayIcon").src="IconSets/"+iconSet+"/"+obj.TodayCode+'_small'+iconExt;
+                                  document.getElementById("TodayHiLo").innerHTML=obj.TodayHi_c+ "&#176; / <font color=#a8a8a8>"+obj.TodayLo_c+ "&#176;</font>";
+                                  
+                                  document.getElementById("Day1").innerHTML=obj.Day1;
+                                  document.getElementById("Day1Icon").src="IconSets/"+iconSet+"/"+obj.Day1Code+'_small'+iconExt;
+                                  document.getElementById("Day1HiLo").innerHTML=obj.Day1Hi_c+ "&#176; / <font color=#a8a8a8>"+obj.Day1Lo_c+ "&#176;</font>";
+                                  
+                                  document.getElementById("Day2").innerHTML=obj.Day2;
+                                  document.getElementById("Day2Icon").src="IconSets/"+iconSet+"/"+obj.Day2Code+'_small'+iconExt;
+                                  document.getElementById("Day2HiLo").innerHTML=obj.Day2Hi_c+ "&#176; / <font color=#a8a8a8>"+obj.Day2Lo_c+ "&#176;</font>";
+                                  
+                                  document.getElementById("Day3").innerHTML=obj.Day3;
+                                  document.getElementById("Day3Icon").src="IconSets/"+iconSet+"/"+obj.Day3Code+'_small'+iconExt;
+                                  document.getElementById("Day3HiLo").innerHTML=obj.Day3Hi_c+ "&#176; / <font color=#a8a8a8>"+obj.Day3Lo_c+ "&#176;</font>";
+                                  
+                                  document.getElementById("Day4").innerHTML=obj.Day4;
+                                  document.getElementById("Day4Icon").src="IconSets/"+iconSet+"/"+obj.Day4Code+'_small'+iconExt;
+                                  document.getElementById("Day4HiLo").innerHTML=obj.Day4Hi_c+ "&#176; / <font color=#a8a8a8>"+obj.Day4Lo_c+ "&#176;</font>";
+                                  
+                                  }
+                                  
+                                  // end forecast
+                                  }
+                                  });
+                           });
 
-		obj.Day3 = request.responseXML.getElementsByTagName("forecast")[3].getAttribute("day");
-		obj.Day3Hi = request.responseXML.getElementsByTagName("forecast")[3].getAttribute("high");
-		obj.Day3Lo = request.responseXML.getElementsByTagName("forecast")[3].getAttribute("low");
-		obj.Day3Code = request.responseXML.getElementsByTagName("forecast")[3].getAttribute("code");
-
-		obj.Day4 = request.responseXML.getElementsByTagName("forecast")[4].getAttribute("day");
-		obj.Day4Hi = request.responseXML.getElementsByTagName("forecast")[4].getAttribute("high");
-		obj.Day4Lo = request.responseXML.getElementsByTagName("forecast")[4].getAttribute("low");
-		obj.Day4Code = request.responseXML.getElementsByTagName("forecast")[4].getAttribute("code");
-
-		forecastTag = findChild(findChild(effectiveRoot, "item"), "yweather:forecast");
-		callback (obj); 
-	}
-	else{
-		callback ({error:true, errorString:"XML request failed. no responseXML"});
-	}
-}
-
-function validateWeatherLocation (location, callback)
-{
-	var obj = {error:false, errorString:null, cities: new Array};
-	obj.cities[0] = {zip: location}; //Not very clever, are we?
-	callback (obj);
-}
 
 var LangTranslate = English
 var stylesheet = 'myopiaAlt'
@@ -404,12 +464,14 @@ var scriptNode = document.createElement('script');
 scriptNode.type = 'text/javascript';
 headID.appendChild(scriptNode);
 
-function onLoad(){
-	//document.getElementById("weatherIcon").src="IconSets/"+iconSet+"/"+"dunno"+iconExt;
-	validateWeatherLocation(escape(locale).replace(/^%u/g, "%"), setPostal)
-	setInterval('fetchWeatherData(dealWithWeather,postal)', 1000*60*updateInterval);
-}
-
+$(document).ready(function onLoad(){
+                  setInterval(function(){cache_clear()},1000*60*updateInterval);
+                  });
+                  function cache_clear()
+                  {
+                      window.location.reload(true);
+                  }
+ 
 function setPostal(obj){
 	if (obj.error == false){
 		if(obj.cities.length > 0){
@@ -426,72 +488,7 @@ function setPostal(obj){
 function dealWithWeather(obj){
 
 	if (obj.error == false){
-		document.getElementById("city").innerText=obj.city.substring(0,13);
-		
-		if (LangTranslate == English)
-		{
-		document.getElementById("desc").innerText=obj.description; //+" ("+obj.icon+")";
-		}
-		else
-		{
-		document.getElementById("desc").innerText = LangTranslate[obj.icon*1];		}
-		if(useRealFeel == true){
-			tempValue = obj.realFeel;
-		}else{
-			tempValue = obj.temp;
-		}
-		var currentTime = new Date ( );
-		var currentHours = currentTime.getHours ( );
-		var currentMinutes = currentTime.getMinutes ( );
-		if(obj.sunsethr < currentHours){
-		obj.TOD = "Tonight"
-		}
-		else if(obj.sunsethr < currentHours)
-		{
-		obj.TOD = "Tonight"
-		}
-		else if(currentHours < 2)
-		{
-		obj.TOD = "Tonight"
-		}
-		else
-		{
-		obj.TOD = "Today"
-		}
-
-		if (isCelsius == true) {
-			document.getElementById("temp").innerHTML=tempValue+ "&#176; C";
-		} else {
-			document.getElementById("temp").innerHTML=tempValue+ "&#176; F";
-		}
-		document.getElementById("weatherIcon").src="IconSets/"+iconSet+"/"+obj.icon+iconExt;
-		
-		if (showBackground == false){
-			document.getElementById("mainbk").src="IconSets/mnidhk"+"/"+obj.icon+iconExt;
-			}
-	
-		if (showForecast == true){
-		document.getElementById("Today").innerHTML=ForecastDayNames(obj.TOD);
-		document.getElementById("TodayIcon").src="IconSets/"+iconSet+"/"+obj.TodayCode+'_small'+iconExt;
-		document.getElementById("TodayHiLo").innerHTML=obj.TodayHi+ "&#176; / <font color=#a8a8a8>"+obj.TodayLo+ "&#176;</font>";
-				
-		document.getElementById("Day1").innerHTML=ForecastDayNames(obj.Day1);
-		document.getElementById("Day1Icon").src="IconSets/"+iconSet+"/"+obj.Day1Code+'_small'+iconExt;
-		document.getElementById("Day1HiLo").innerHTML=obj.Day1Hi+ "&#176; / <font color=#a8a8a8>"+obj.Day1Lo+ "&#176;</font>";
-		
-		document.getElementById("Day2").innerHTML=ForecastDayNames(obj.Day2);
-		document.getElementById("Day2Icon").src="IconSets/"+iconSet+"/"+obj.Day2Code+'_small'+iconExt;
-		document.getElementById("Day2HiLo").innerHTML=obj.Day2Hi+ "&#176; / <font color=#a8a8a8>"+obj.Day2Lo+ "&#176;</font>";
-
-		document.getElementById("Day3").innerHTML=ForecastDayNames(obj.Day3);
-		document.getElementById("Day3Icon").src="IconSets/"+iconSet+"/"+obj.Day3Code+'_small'+iconExt;
-		document.getElementById("Day3HiLo").innerHTML=obj.Day3Hi+ "&#176; / <font color=#a8a8a8>"+obj.Day3Lo+ "&#176;</font>";
-
-		document.getElementById("Day4").innerHTML=ForecastDayNames(obj.Day4);
-		document.getElementById("Day4Icon").src="IconSets/"+iconSet+"/"+obj.Day4Code+'_small'+iconExt;
-		document.getElementById("Day4HiLo").innerHTML=obj.Day4Hi+ "&#176; / <font color=#a8a8a8>"+obj.Day4Lo+ "&#176;</font>";
-		}
-
+        
   var currentTime = new Date ( );
   var currentHours = currentTime.getHours ( );
   var currentMinutes = currentTime.getMinutes ( );
@@ -513,65 +510,13 @@ function dealWithWeather(obj){
   // Compose the string for display
   var currentTimeString = currentHours + ":" + currentMinutes;	    
 	    
-var Conditions = ["thunderstorm",
-				"rain",
-				"rain",
-				"thunderstorm",
-				"thunderstorm",
-				"sleet",
-				"sleet",
-				"sleet",
-				"sleet",
-				"showers_cloud",
-				"sleet",
-				"showers_cloud",
-				"showers_cloud",
-				"snow",
-				"snow",
-				"snow",
-				"snow",
-				"hail",
-				"sleet",
-				"fog",
-				"fog",
-				"Haze",
-				"fog",
-				"wind",
-				"wind",
-				"frost",
-				"cloud",
-				"partlymoon",
-				"partlysunny",
-				"partlymoon",
-				"partlysunny",
-				"moon",
-				"sun",
-				"partlymoon",
-				"partlysunny",
-				"sleet",
-				"sun",
-				"thunderstorm",
-				"thunderstorm",
-				"thunderstorm",
-				"thunderstorm",
-				"snow",
-				"snow",
-				"snow",
-				"cloud",
-				"thunderstorm",
-				"snow",
-				"thunderstorm",
-				"blank"];
 
-if (showWeatherAni == true){
-		document.getElementById("animationFrame").src="Animations/"+Conditions[obj.icon]+".html";
-}
 }
 }
 </script>
 </head>
 
-<body onLoad="onLoad()"style="margin: 0">
+<body style="margin: 0">
 <div id="weatherFrame">
 	<iframe id="animationFrame" name="animation" src="Animations/blank.html" width="414px" height="658px" scrolling="no" frameborder="0" marginwidth="0" marginheight="0" allowtransparency="true"></iframe>
 </div>
@@ -608,10 +553,10 @@ if (showWeatherAni == true){
 <script type="text/javascript">
 	if (displayWeatherIcon == true){
 	document.write("<img id=\"weatherIcon\" src=\"\" height=157px width=167px style=\"position:absolute; top:115px;left:124px;z-index:1;\">\
-<a id=\"city\"></a><a id=\"desc\"></a><a id=\"temp\"></a>")
+<a id=\"city\"></a><a id=\"desc\"></a><a id=\"temp\"></a><a id=\"dew\"></a>")
 	}else if (displayWeatherIcon == false){
 	    document.write("<img id=\"weatherIcon\" src=\"\" height=0 width=0 style=\"position:absolute; top:0px;left:0px;z-index:-21;\">\
-					   <a id=\"city\"></a><a id=\"desc\"></a><a id=\"temp\"></a>")
+					   <a id=\"city\"></a><a id=\"desc\"></a><a id=\"temp\"></a><a id=\"dew\"></a>")
 	}
 </script>
 
@@ -674,6 +619,7 @@ if (showWeatherAni == true){
     }
     </script>
 <a id="time" style="position:absolute; top:103px; width:389px;z-index:-1;font-size:8px;display:none;"></a>
+<img src=https://icons.wxug.com/logos/PNG/wundergroundLogo_4c_horz.png style="position:absolute; top:212px; left:20px; width:90px;">
 </div>
 </div>	
 </body>
